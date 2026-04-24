@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Risk Prediction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f0f4f8; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="glass-card w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-r from-cyan-600 to-blue-700 p-8 text-white">
+            <h2 class="text-2xl font-bold">Disease Risk Analysis</h2>
+            <p class="text-cyan-100 text-sm opacity-90">Enter vitals for an instant AI-based health assessment.</p>
+        </div>
+
+        <div class="p-8 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Glucose</label>
+                    <input id="glucose" type="number" 
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 outline-none transition-all" 
+                        placeholder="mg/dL">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Blood Pressure</label>
+                    <input id="bp" type="number" 
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 outline-none transition-all" 
+                        placeholder="mmHg">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">BMI</label>
+                    <input id="bmi" type="number" step="0.1"
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 outline-none transition-all" 
+                        placeholder="kg/m²">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase ml-1">Age</label>
+                    <input id="age" type="number" 
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 outline-none transition-all" 
+                        placeholder="Years">
+                </div>
+            </div>
+
+            <button onclick="predict()" id="predict-btn"
+                class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-cyan-100 transition-all active:scale-[0.98] flex items-center justify-center">
+                Analyze Risk
+            </button>
+
+            <div id="result-area" class="hidden space-y-4 pt-6 border-t border-slate-100">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-bold text-slate-400 uppercase tracking-widest">Prediction Result</span>
+                    <span id="risk-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase"></span>
+                </div>
+                
+                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100">
+                    <p id="result" class="text-xl font-bold text-slate-800 text-center"></p>
+                </div>
+
+                <p class="text-[10px] text-slate-400 text-center uppercase tracking-tight">
+                    * Not a substitute for professional medical advice.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function predict() {
+            const btn = document.getElementById('predict-btn');
+            const resultArea = document.getElementById('result-area');
+            const resultText = document.getElementById('result');
+            const riskBadge = document.getElementById('risk-badge');
+
+            // Collect values
+            const glucoseVal = document.getElementById('glucose').value;
+            const bpVal = document.getElementById('bp').value;
+            const bmiVal = document.getElementById('bmi').value;
+            const ageVal = document.getElementById('age').value;
+
+            if(!glucoseVal || !bpVal || !bmiVal || !ageVal) return alert("Please fill all fields");
+
+            btn.disabled = true;
+            btn.innerText = "Analyzing Vitals...";
+
+            fetch('/predict/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: "glucose=" + encodeURIComponent(glucoseVal) + 
+                      "&bp=" + encodeURIComponent(bpVal) + 
+                      "&bmi=" + encodeURIComponent(bmiVal) + 
+                      "&age=" + encodeURIComponent(ageVal)
+            })
+            .then(res => res.json())
+            .then(data => {
+                const risk = data.risk || data.error;
+                resultArea.classList.remove('hidden');
+                resultText.innerText = risk;
+
+                // Color-code logic based on common health result strings
+                if(risk.toLowerCase().includes('high') || risk.toLowerCase().includes('positive')) {
+                    riskBadge.innerText = "High Risk";
+                    riskBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-100 text-red-600";
+                } else if(risk.toLowerCase().includes('low') || risk.toLowerCase().includes('negative')) {
+                    riskBadge.innerText = "Low Risk";
+                    riskBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-emerald-100 text-emerald-600";
+                } else {
+                    riskBadge.innerText = "Info";
+                    riskBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-600";
+                }
+            })
+            .catch(() => {
+                resultText.innerText = "Prediction Failed. Try again.";
+                resultArea.classList.remove('hidden');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "Analyze Risk";
+            });
+        }
+    </script>
+
+</body>
+</html>

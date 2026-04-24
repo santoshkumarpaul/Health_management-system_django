@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consent Request</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* Subtle animation for the card */
+        .slide-up { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden slide-up">
+        <div class="bg-indigo-600 p-6 text-center">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-full mb-3 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04defaultA12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </div>
+            <h2 class="text-xl font-bold text-white">Consent Request</h2>
+            <p class="text-indigo-100 text-sm">Request permission to access medical records</p>
+        </div>
+
+        <div class="p-8 space-y-5">
+            <div>
+                <label class="block text-sm font-semibold text-slate-600 mb-1.5 ml-1">Patient Identification</label>
+                <div class="relative">
+                    <input id="patient" type="text" 
+                        class="w-full pl-4 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all outline-none" 
+                        placeholder="Enter Patient ID">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-600 mb-1.5 ml-1">Doctor Identification</label>
+                <input id="doctor" type="text" 
+                    class="w-full pl-4 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none transition-all outline-none" 
+                    placeholder="Enter Doctor ID">
+            </div>
+
+            <p class="text-[11px] text-slate-400 text-center px-4">
+                By clicking the button below, an official request will be sent to the patient for digital authorization.
+            </p>
+
+            <button onclick="request()" id="req-btn"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.97] flex items-center justify-center">
+                <span id="btn-text">Request Consent</span>
+            </button>
+
+            <div id="status-box" class="hidden p-3 rounded-lg text-center text-sm font-medium"></div>
+        </div>
+    </div>
+
+    <script>
+        function request() {
+            const btn = document.getElementById('req-btn');
+            const btnText = document.getElementById('btn-text');
+            const statusBox = document.getElementById('status-box');
+            const pId = document.getElementById('patient').value;
+            const dId = document.getElementById('doctor').value;
+
+            // Immediate UI feedback
+            btnText.innerText = "Processing...";
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+
+            fetch('/request-consent/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: "patient_id=" + encodeURIComponent(pId) + "&doctor_id=" + encodeURIComponent(dId)
+            })
+            .then(res => res.json())
+            .then(data => {
+                statusBox.classList.remove('hidden', 'bg-red-50', 'text-red-600', 'bg-emerald-50', 'text-emerald-600');
+                
+                if (data.error) {
+                    statusBox.innerText = data.error;
+                    statusBox.classList.add('bg-red-50', 'text-red-600');
+                } else {
+                    statusBox.innerText = data.message || "Request sent successfully!";
+                    statusBox.classList.add('bg-emerald-50', 'text-emerald-600');
+                }
+            })
+            .catch(() => {
+                statusBox.innerText = "Server connection error.";
+                statusBox.classList.add('bg-red-50', 'text-red-600');
+                statusBox.classList.remove('hidden');
+            })
+            .finally(() => {
+                btnText.innerText = "Request Consent";
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+                statusBox.classList.remove('hidden');
+            });
+        }
+    </script>
+
+</body>
+</html>

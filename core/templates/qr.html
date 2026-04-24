@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient QR Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;600&family=DM+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117;
+            --teal: #0b7c6e;
+            --font-display: 'DM Serif Display', serif;
+            --font-body: 'Outfit', sans-serif;
+        }
+        body { font-family: var(--font-body); background: #f5f4f0; }
+        .display-font { font-family: var(--font-display); }
+        
+        /* QR Container Styling */
+        .qr-frame {
+            background: white;
+            border: 1px solid #e2e0d9;
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Scanning line animation */
+        .scanner-line {
+            width: 100%;
+            height: 2px;
+            background: var(--teal);
+            position: absolute;
+            top: 0;
+            left: 0;
+            box-shadow: 0 0 15px 2px var(--teal);
+            animation: scan 3s infinite linear;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .qr-placeholder {
+            background-image: radial-gradient(#e2e0d9 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+
+    <div class="w-full max-w-md">
+        <div class="qr-frame shadow-2xl p-8 slide-up">
+            <div class="text-center mb-8">
+                <h2 class="display-font text-3xl text-gray-900">Access Identity</h2>
+                <p class="text-sm text-gray-400 font-mono uppercase tracking-widest mt-1">Secure ABHA QR Token</p>
+            </div>
+
+            <div class="relative group">
+                <div id="qr-container" class="qr-placeholder w-64 h-64 mx-auto rounded-2xl border-2 border-dashed border-gray-100 flex items-center justify-center overflow-hidden bg-gray-50">
+                    <img id="qrImg" class="hidden w-full h-full p-4 transition-all duration-500 scale-95 group-hover:scale-100" alt="Patient QR">
+                    <div id="qr-empty-state" class="text-center p-6">
+                        <div class="text-4xl mb-2 opacity-20">📡</div>
+                        <p class="text-xs text-gray-400">Enter ID to generate secure access token</p>
+                    </div>
+                    <div id="scanner" class="scanner-line"></div>
+                </div>
+            </div>
+
+            <div class="mt-10 space-y-4">
+                <div class="relative">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest absolute -top-2 left-4 bg-white px-1">Patient ID</label>
+                    <input id="userId" type="text" 
+                        class="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#0b7c6e] focus:border-[#0b7c6e] outline-none transition-all font-semibold tracking-wide" 
+                        placeholder="e.g. 91-1234-5678">
+                </div>
+
+                <button onclick="loadQR()" id="qr-btn"
+                    class="w-full bg-[#0b7c6e] hover:bg-[#096358] text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                    <span>Show QR Code</span>
+                </button>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-gray-100 flex items-center justify-center gap-4">
+                <div class="flex items-center gap-1 text-[10px] text-gray-400 font-mono uppercase">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    Encrypted
+                </div>
+                <div class="w-1 h-1 bg-gray-200 rounded-full"></div>
+                <div class="text-[10px] text-gray-400 font-mono uppercase">Verified by HealthChain</div>
+            </div>
+        </div>
+        
+        <p class="text-center text-gray-400 text-xs mt-6">
+            Keep this QR private. It grants access to your medical history.
+        </p>
+    </div>
+
+    <script>
+        function loadQR() {
+            const idInput = document.getElementById("userId");
+            const qrImg = document.getElementById("qrImg");
+            const emptyState = document.getElementById("qr-empty-state");
+            const scanner = document.getElementById("scanner");
+            const btn = document.getElementById("qr-btn");
+
+            if (!idInput.value) return;
+
+            // Update UI for loading
+            btn.innerText = "Generating...";
+            btn.disabled = true;
+            scanner.style.display = "block";
+
+            fetch('/get-qr/' + encodeURIComponent(idInput.value) + '/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.qr) {
+                        qrImg.src = data.qr;
+                        qrImg.classList.remove('hidden');
+                        emptyState.classList.add('hidden');
+                        document.getElementById('qr-container').classList.remove('qr-placeholder', 'bg-gray-50');
+                    } else {
+                        alert(data.error);
+                        scanner.style.display = "none";
+                    }
+                })
+                .catch(err => {
+                    alert("Connection Error");
+                    scanner.style.display = "none";
+                })
+                .finally(() => {
+                    btn.innerText = "Show QR Code";
+                    btn.disabled = false;
+                });
+        }
+    </script>
+
+</body>
+</html>

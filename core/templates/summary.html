@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Patient Summary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #f4f7fa;
+        }
+
+        /* Fixed Gradient Text Logic */
+        .ai-gradient-text {
+            background: linear-gradient(90deg, #4f46e5, #9333ea);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent; /* Required for the clip to work */
+            display: inline-block;
+        }
+
+        /* Pulse animation for loading state */
+        .loader-dots div {
+            animation: blink 1.4s infinite both;
+        }
+        .loader-dots div:nth-child(2) { animation-delay: 0.2s; }
+        .loader-dots div:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes blink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+        <div class="p-6 border-b border-gray-50 flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-700 text-gray-800">
+                    <span class="ai-gradient-text">AI Clinical Insights</span>
+                </h2>
+                <p class="text-gray-400 text-xs font-medium uppercase tracking-tighter">Automated Patient Analysis</p>
+            </div>
+            <div class="bg-indigo-50 p-2 rounded-xl">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <div class="flex flex-col md:flex-row gap-3 mb-8">
+                <input type="text" id="patient" 
+                    class="flex-1 px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all font-semibold text-gray-700" 
+                    placeholder="Enter Patient ID (e.g. 101)">
+                
+                <button onclick="generate()" id="gen-btn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                    Generate
+                </button>
+            </div>
+
+            <div id="response-container" class="hidden">
+                <div class="flex items-center gap-2 mb-4">
+                    <div id="loading-spinner" class="hidden loader-dots flex gap-1">
+                        <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
+                        <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
+                        <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
+                    </div>
+                    <span id="status-label" class="text-sm font-bold text-gray-400 uppercase tracking-widest">Summary Report</span>
+                </div>
+
+                <div id="result" class="w-full p-6 bg-indigo-50/50 border border-indigo-100 rounded-2xl text-gray-700 leading-relaxed min-h-[150px] whitespace-pre-wrap">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generate() {
+            const patientId = document.getElementById('patient').value;
+            const resultBox = document.getElementById('result');
+            const container = document.getElementById('response-container');
+            const spinner = document.getElementById('loading-spinner');
+            const btn = document.getElementById('gen-btn');
+
+            if (!patientId) return;
+
+            // Reset UI for new request
+            container.classList.remove('hidden');
+            resultBox.innerText = "";
+            resultBox.classList.remove('text-red-500');
+            spinner.classList.remove('hidden');
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            // Your existing fetch logic
+            fetch('/generate-summary/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: "patient_id=" + encodeURIComponent(patientId)
+            })
+            .then(res => res.json())
+            .then(data => {
+                spinner.classList.add('hidden');
+                if (data.error) {
+                    resultBox.innerText = data.error;
+                    resultBox.classList.add('text-red-500');
+                } else {
+                    resultBox.innerText = data.summary;
+                }
+            })
+            .catch(err => {
+                spinner.classList.add('hidden');
+                resultBox.innerText = "Failed to communicate with AI server.";
+                resultBox.classList.add('text-red-500');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "Generate";
+            });
+        }
+    </script>
+</body>
+</html>

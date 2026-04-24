@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthChain | Provider Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --ink: #0f1117;
+            --surface: #f5f4f0;
+            --teal: #0b7c6e;
+            --border: #e2e0d9;
+            --font-display: 'DM Serif Display', serif;
+            --font-body: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--surface);
+            font-family: var(--font-body);
+            color: var(--ink);
+            margin: 0;
+        }
+
+        .display-font { font-family: var(--font-display); }
+        .mono-font { font-family: 'DM Mono', monospace; }
+
+        /* Modern Card Styling */
+        .modern-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
+        }
+
+        .modern-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        /* Form styling */
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #fcfcfb;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--teal);
+        }
+
+        .btn-primary {
+            background: var(--teal);
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .sidebar {
+            width: 260px;
+            background: var(--ink);
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+    </style>
+</head>
+<body class="flex">
+
+    <aside class="sidebar p-6 flex flex-col shrink-0">
+        <div class="mb-10">
+            <div class="w-10 h-10 bg-[#0b7c6e] rounded-xl flex items-center justify-center text-white text-xl mb-3">🏥</div>
+            <h1 class="display-font text-white text-xl leading-tight">HealthChain</h1>
+            <p class="text-[10px] text-white/40 tracking-widest mono-font uppercase">Provider Access</p>
+        </div>
+
+        <nav class="flex-1 space-y-1">
+            <div class="text-[10px] text-white/20 tracking-widest mono-font uppercase mb-4 px-3">Management</div>
+            <a href="#" class="flex items-center gap-3 p-3 text-sm text-white bg-white/10 rounded-lg"><span>🩺</span> Dashboard</a>
+            <a href="#" class="flex items-center gap-3 p-3 text-sm text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"><span>👥</span> Patients</a>
+            <a href="#" class="flex items-center gap-3 p-3 text-sm text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"><span>📜</span> Audit Logs</a>
+        </nav>
+
+        <div class="pt-6 border-t border-white/10">
+            <div class="flex items-center gap-3 px-3">
+                <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 font-bold text-xs">AN</div>
+                <div class="text-[11px]">
+                    <p class="text-white font-medium">Dr. Anjali Nair</p>
+                    <p class="text-white/40">Verified Provider</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-10 max-w-5xl">
+        <header class="mb-12">
+            <h2 class="display-font text-4xl mb-2">Doctor Dashboard</h2>
+            <p class="text-gray-500">Securely manage patient consent and health records via ABDM.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <div class="modern-card p-8 flex flex-col">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">🔐</span>
+                    <h3 class="display-font text-2xl">Request Access</h3>
+                </div>
+                
+                <div class="space-y-4 flex-1">
+                    <div>
+                        <label class="text-[10px] mono-font uppercase text-gray-400 mb-1 block tracking-wider">Patient ABHA ID</label>
+                        <input id="patient" class="form-input" placeholder="91-XXXX-XXXX-XXXX">
+                    </div>
+                    <div>
+                        <label class="text-[10px] mono-font uppercase text-gray-400 mb-1 block tracking-wider">Your Provider ID</label>
+                        <input id="doctor" class="form-input" placeholder="HFR-MH-00123">
+                    </div>
+                </div>
+
+                <button onclick="requestConsent()" class="btn-primary mt-8 w-full flex items-center justify-center gap-2">
+                    <span>Send Request</span>
+                    <span class="text-xs opacity-50">→</span>
+                </button>
+            </div>
+
+            <div class="modern-card p-8 flex flex-col bg-[#f8fafc]">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="p-2 bg-purple-50 text-purple-600 rounded-lg">✦</span>
+                    <h3 class="display-font text-2xl">AI Insights</h3>
+                </div>
+
+                <div class="flex gap-2 mb-6">
+                    <input id="patientSum" class="form-input" placeholder="Patient ID">
+                    <button onclick="summary()" class="btn-primary py-2 px-4 whitespace-nowrap">Generate</button>
+                </div>
+
+                <div id="summary-output" class="flex-1 bg-white border border-gray-100 rounded-xl p-4 text-sm text-gray-600 leading-relaxed italic">
+                    <p id="result">Result will appear here...</p>
+                </div>
+            </div>
+
+            <div class="modern-card p-8 md:col-span-2">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-3">
+                        <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">📋</span>
+                        <h3 class="display-font text-2xl">Retrieve Records</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="p2" class="form-input w-44" placeholder="Patient ID">
+                        <input id="d2" class="form-input w-44" placeholder="Doctor ID">
+                        <button onclick="viewRecords()" class="btn-primary">View Records</button>
+                    </div>
+                </div>
+
+                <div class="overflow-hidden rounded-xl border border-gray-100">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="p-4 text-[10px] mono-font uppercase text-gray-400">Description</th>
+                                <th class="p-4 text-[10px] mono-font uppercase text-gray-400">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records" class="divide-y divide-gray-50">
+                            <tr>
+                                <td colspan="2" class="p-8 text-center text-gray-400 text-sm">Enter IDs and click view to retrieve history</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+    // Logic updated to handle modern UI elements
+    function requestConsent() {
+        const btn = event.currentTarget;
+        btn.disabled = true;
+        btn.innerText = "Requesting...";
+
+        fetch('/request-consent/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: "patient_id=" + encodeURIComponent(patient.value) + "&doctor_id=" + encodeURIComponent(doctor.value)
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message || data.error);
+            btn.disabled = false;
+            btn.innerText = "Send Request";
+        });
+    }
+
+    function viewRecords() {
+        const list = document.getElementById("records");
+        list.innerHTML = `<tr><td colspan="2" class="p-8 text-center text-teal-600 animate-pulse">Decrypting Records...</td></tr>`;
+
+        fetch('/view-records/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: "patient_id=" + encodeURIComponent(p2.value) + "&doctor_id=" + encodeURIComponent(d2.value)
+        })
+        .then(res => res.json())
+        .then(data => {
+            list.innerHTML = "";
+            if (data.records) {
+                data.records.forEach(r => {
+                    let tr = document.createElement("tr");
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-4 text-sm font-medium text-gray-700">${r.description}</td>
+                        <td class="p-4"><a href="${r.file}" class="text-teal-600 font-bold hover:underline text-sm">View Document →</a></td>
+                    `;
+                    list.appendChild(tr);
+                });
+            } else {
+                list.innerHTML = `<tr><td colspan="2" class="p-8 text-center text-red-500">${data.error}</td></tr>`;
+            }
+        });
+    }
+
+    function summary() {
+        const result = document.getElementById("result");
+        result.innerHTML = `<span class="animate-pulse">AI is analyzing health history...</span>`;
+
+        fetch('/generate-summary/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: "patient_id=" + encodeURIComponent(patientSum.value)
+        })
+        .then(res => res.json())
+        .then(data => {
+            result.innerText = data.summary || data.error;
+        });
+    }
+    </script>
+
+</body>
+</html>
